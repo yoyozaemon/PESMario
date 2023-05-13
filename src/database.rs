@@ -1,3 +1,5 @@
+extern crate mysql
+
 use mysql::prelude::*;
 use mysql::Pool;
 
