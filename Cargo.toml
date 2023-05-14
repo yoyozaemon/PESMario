@@ -1,11 +1,13 @@
 [package]
 name = "PESMario"
 version = "0.1.0"
-edition = "2023"
-author = "Vijay J"
+edition = "2021"
+author = ["Vijay J <vijay.j8779@gmail.com>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-mysql = "20.0.1"
-piston_window = "0.129.0"
+#mysql = "23.0.1"
+piston_window = "0.128.0"
+#piston = "0.53.2"
+
