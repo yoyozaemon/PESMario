@@ -10,7 +10,8 @@ fn main() {
 
     while let Some(event) = window.next() {
         window.draw_2d(&event, |context, graphics, _device| {
-            clear([1.0; 4], graphics);
+            //clear([1.0; 4], graphics);
+            clear([0.0, 0.0, 0.0, 1.0], graphics);
             rectangle([0.0, 0.0, 0.0, 0.0],
                       [0.0, 0.0, 100.0, 100.0],
                       context.transform,
