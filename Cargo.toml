@@ -10,4 +10,6 @@ author = ["Vijay J <vijay.j8779@gmail.com>"]
 #mysql = "23.0.1"
 piston_window = "0.128.0"
 #piston = "0.53.2"
-
+rodio = "0.17.0"
+#piston2d-graphics = "0.43.0"
+#piston2d-opengl_graphics = "0.82.0"
