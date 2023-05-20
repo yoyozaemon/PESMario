@@ -1,56 +1,61 @@
 extern crate rodio;
 extern crate piston_window;
 
-use std::error::Error;
 use std::fs::File;
-use std::io::{BufReader, Seek};
+use std::io::BufReader;
+use std::io::SeekFrom;
+use std::io::prelude::*;
 use std::path::Path;
-use std::thread;
-use std::time::Duration;
+use rodio::Decoder;
+use rodio::Sink;
 
-use rodio::{Decoder, OutputStream, Sink};
-
-fn main() -> Result<(), Box<dyn Error>> {
-    // Construct the path to the audio file
-    let path = Path::new("res").join("background.wav");
-
-    // Open the audio file and create a decoder for it
-    let file = File::open(&path)?;
-    let mut reader = BufReader::new(file);
-    let source = Decoder::new(&mut reader)?;
-
-    // Create an output stream and sink to play the audio
-    let (_stream, stream_handle) = OutputStream::try_default()?;
-    let sink = Sink::try_new(&stream_handle)?;
-    sink.append(source);
-
-    // Enable continuous loop
-    sink.set_looping(true);
-
-    // Play the audio
-    sink.play();
-
-    // Wait for a bit
-    thread::sleep(Duration::from_secs(10));
-
-    // Disable continuous loop
-    sink.set_looping(false);
-
-    // Wait for a bit
-    thread::sleep(Duration::from_secs(2));
-
-    // Pause the audio
-    sink.pause();
-
-    // Wait for a bit
-    thread::sleep(Duration::from_secs(2));
-
-    // Resume the audio
-    sink.play();
-
-    // Wait for the audio to finish playing
-    thread::sleep(Duration::from_secs(10));
-
-    Ok(())
+pub struct Audio {
+    current_frame: Option<u64>,
+    sink: Sink,
+    status: String,
 }
 
+impl Audio {
+    pub fn new() -> Result<Self, &'static str> {
+        let file_path = Path::new("res/background.wav");
+        let file = File::open(&file_path).map_err(|_| "Error: Could not open file.")?;
+        let source = Decoder::new(BufReader::new(file)).map_err(|_| "Error: Could not decode file.")?;
+        let device = rodio::default_output_device().ok_or("Error: No audio output device found.")?;
+        let sink = Sink::new(&device);
+        sink.append(source);
+        sink.pause();
+
+        Ok(Self {
+            current_frame: None,
+            sink,
+            status: String::from("paused"),
+        })
+    }
+
+    pub fn play(&mut self) {
+        self.sink.play();
+        self.status = String::from("play");
+    }
+
+    pub fn pause(&mut self) {
+        if self.status == "paused" {
+            println!("Audio is already paused.");
+            return;
+        }
+        self.current_frame = Some(self.sink.get_position().unwrap().0);
+        self.sink.pause();
+        self.status = String::from("paused");
+    }
+
+    pub fn resume(&mut self) {
+        if self.status == "play" {
+            println!("Audio is already playing.");
+            return;
+        }
+        if let Some(frame) = self.current_frame {
+            self.sink.seek(SeekFrom::Start(frame)).unwrap();
+        }
+        self.sink.play();
+        self.status = String::from("play");
+    }
+}
